@@ -1,0 +1,16 @@
+body {
+	min-width: 250px;
+}
+
+h3 {
+	text-align: center;
+}
+
+#buttonwrapper {
+	text-align: center;
+}
+
+input {
+	margin: 10px;
+	cursor: pointer;
+}
