@@ -19,25 +19,18 @@ function connectButtons() {
 }
 
 function saveFcn() {
-	chrome.windows.getCurrent({'populate': true}, parseWindow);
-}
+	chrome.windows.getCurrent({'populate': true}, function (win) {
+		chrome.tabs.getAllInWindow(win.id, function(tabs) {
+			var taburls = [...tabs].map(t => t.url);
+			if (taburls.some(u => u == undefined)) {
+				alert("At least 1 url is undefined.")
+			}
+			else {
+				saveFile(taburls);
 
-function parseWindow(win) {
-	chrome.tabs.getAllInWindow(win.id, parseTabs);
-}
-
-function parseTabs(tabs) {
-	// for (var i = tabs.length - 1; i >= 0; i--) {
-	// 	console.log(tabs[i].url);
-	// }
-	var taburls = [...tabs].map(t => t.url);
-	if (taburls.some(u => u == undefined)) {
-		alert("At least 1 url is undefined.")
-	}
-	else {
-		saveFile(taburls);
-
-	}
+			}
+		});
+	});
 }
 
 function loadFcn() {
@@ -63,7 +56,7 @@ function parseFile(readEvent) {
 		fileValid = false;
 	}
 	if (fileValid) {
-	openTabs(loadedTabList);
+		openTabs(loadedTabList);
 	}
 	else {
 		alert("Invalid file selection!");
@@ -72,7 +65,17 @@ function parseFile(readEvent) {
 
 
 function openTabs(urlarray) {
-	alert(urlarray.map((u,i) => "URL " + (i+1) + ": " + u).join("\n\n"));
+	chrome.windows.getCurrent({'populate': true}, function (win) {
+		chrome.tabs.getAllInWindow(win.id, function (tabs) {
+			var taburls = [...tabs].map(t => t.url);
+			if ((taburls.length == 1) && (taburls[0] == "chrome://newtab/")) {
+				// alert("no tabs open in current");
+				chrome.windows.remove(tabs[0].windowId);
+			}
+			chrome.windows.create({'url': urlarray});
+		});
+	});
+
 }
 
 function saveFile(urlarray) {
